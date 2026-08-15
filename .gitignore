@@ -7,3 +7,5 @@ dist/
 .vscode/
 .idea/
 *.log
+db.sqlite3
+nodejs/
