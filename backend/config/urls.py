@@ -7,7 +7,11 @@ import os
 def render_react(request):
     try:
         with open(os.path.join(settings.BASE_DIR, 'frontend', 'dist', 'index.html')) as f:
-            return HttpResponse(f.read())
+            response = HttpResponse(f.read())
+            response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+            return response
     except FileNotFoundError:
         return HttpResponse(
             "Frontend build not found. Please run 'npm install' and 'npm run build' inside the 'frontend' folder.", 

@@ -62,6 +62,7 @@ class Room(models.Model):
 class Bed(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='beds')
     bed_number = models.CharField(max_length=10)
+    is_under_maintenance = models.BooleanField(default=False)
     
     # is_occupied is intentionally excluded as requested, occupancy is derived from BedAllocation
 

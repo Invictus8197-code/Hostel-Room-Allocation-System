@@ -25,6 +25,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
         token['role'] = user.role
+        token['username'] = user.username
         return token
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -111,6 +112,49 @@ class DashboardSummaryView(APIView):
             "active_batch": ApplicationBatchSerializer(latest_batch).data if latest_batch else None
         })
 
+class DashboardFloorplanView(APIView):
+    permission_classes = [IsAdminOrWarden]
+
+    def get(self, request):
+        from backend.apps.hostels.models import Room
+        from backend.apps.analytics.services import AnalyticsService
+        from datetime import datetime
+        
+        # Get occupancy from analytics service
+        start_date = datetime.now().date()
+        end_date = datetime.now().date()
+        room_utils = AnalyticsService.get_room_utilization(start_date, end_date)
+        occupancy_map = {ru['room_id']: ru for ru in room_utils}
+        
+        # Build floorplan tree
+        rooms = Room.objects.select_related('floor', 'floor__block', 'floor__block__hostel').all()
+        
+        # Filter by warden's assigned hostels if they are a Warden
+        if request.user.role == 'WARDEN' and hasattr(request.user, 'warden_profile'):
+            hostel_ids = request.user.warden_profile.assigned_hostels.values_list('id', flat=True)
+            rooms = rooms.filter(floor__block__hostel_id__in=hostel_ids)
+            
+        floorplan = []
+        
+        for room in rooms:
+            occ_data = occupancy_map.get(room.id, {})
+            floorplan.append({
+                "id": room.id,
+                "room_number": room.room_number,
+                "capacity": room.capacity,
+                "is_ac": room.is_ac,
+                "is_under_maintenance": room.is_under_maintenance,
+                "floor_id": room.floor.id,
+                "floor_number": room.floor.floor_number,
+                "block_id": room.floor.block.id,
+                "block_name": room.floor.block.name,
+                "hostel_id": room.floor.block.hostel.id,
+                "hostel_name": room.floor.block.hostel.name,
+                "occupancy": occ_data.get('occupied_beds', 0)
+            })
+            
+        return Response(floorplan)
+
 # --- Allocations ---
 class ApplicationBatchViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ApplicationBatch.objects.all().order_by('-start_date')
@@ -193,6 +237,63 @@ class SimulationRunView(APIView):
             return Response(result)
         except ValueError as e:
             # Could be batch not found or invalid student IDs
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# --- Superadmin Operations ---
+from backend.apps.api.permissions import IsSuperAdmin
+from backend.apps.accounts.services.warden_service import WardenService, WardenServiceError
+
+class WardenAssignmentView(APIView):
+    permission_classes = [IsSuperAdmin]
+
+    def post(self, request, warden_user_id):
+        hostel_ids = request.data.get('hostel_ids', [])
+        
+        if not isinstance(hostel_ids, list):
+            return Response({"error": "hostel_ids must be a list."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            profile = WardenService.assign_hostels_to_warden(warden_user_id, hostel_ids)
+            assigned_hostel_ids = list(profile.assigned_hostels.values_list('id', flat=True))
+            return Response({
+                "message": "Hostels successfully assigned.",
+                "warden_user_id": warden_user_id,
+                "assigned_hostel_ids": assigned_hostel_ids
+            }, status=status.HTTP_200_OK)
+        except WardenServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# --- Swap System ---
+from backend.apps.allocations.services.swap_service import SwapService
+
+class SwapCycleView(APIView):
+    permission_classes = [IsAdminOrWarden]
+
+    def get(self, request, batch_id):
+        try:
+            cycles = SwapService.find_cycles(batch_id)
+            return Response({"cycles": cycles}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ExecuteSwapView(APIView):
+    permission_classes = [IsAdminOrWarden]
+
+    def post(self, request):
+        student_a = request.data.get('student_a')
+        student_b = request.data.get('student_b')
+        
+        if not student_a or not student_b:
+            return Response({"error": "Both student_a and student_b IDs are required."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            SwapService.execute_swap(student_a, student_b)
+            return Response({"message": "Swap executed successfully."}, status=status.HTTP_200_OK)
+        except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

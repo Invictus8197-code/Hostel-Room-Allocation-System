@@ -47,87 +47,74 @@ function Allocations() {
   if (loading) return <div className="loader">Loading Allocations...</div>;
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <h2 className="brand">Smart Hostel</h2>
-        <nav className="nav-menu">
-          <Link to="/dashboard" className="nav-item">Dashboard</Link>
-          <Link to="/allocations" className="nav-item active">Allocations</Link>
-          <Link to="/analytics" className="nav-item">Analytics</Link>
-          <Link to="/simulation" className="nav-item">Simulation</Link>
-        </nav>
-        <div className="user-profile">
-          <div>{user?.username} ({user?.role})</div>
-          <button onClick={logout} className="logout-btn">Logout</button>
-        </div>
-      </aside>
-      
-      <main className="main-content">
-        <header className="page-header">
-          <h1>Allocation Management</h1>
-        </header>
+    <div className="premium-dashboard-container">
+      <header className="page-header" style={{marginBottom: '24px'}}>
+        <h2>Allocation Management</h2>
+        <p className="text-secondary">View and manage hostel application batches and OR-Tools optimization runs.</p>
+      </header>
 
-        <section className="section">
-          <h2>Application Batches</h2>
-          <div className="card-list">
-            {batches.map(batch => (
-              <div key={batch.id} className="list-card">
-                <div>
-                  <strong>{batch.name}</strong>
-                  <div className="text-sm text-gray">{batch.start_date} to {batch.end_date}</div>
-                </div>
-                {user?.role === 'ADMIN' && (
-                  <button 
-                    className="btn btn-primary" 
-                    onClick={() => handleCreateDraft(batch.id)}
-                    disabled={drafting}
-                  >
-                    Run Optimizer
-                  </button>
-                )}
+      <section className="section" style={{marginBottom: '32px'}}>
+        <h3>Application Batches</h3>
+        <div className="premium-kpi-grid" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))'}}>
+          {batches.map(batch => (
+            <div key={batch.id} className="side-panel-card" style={{padding: '20px'}}>
+              <div>
+                <strong style={{fontSize: '1.1rem'}}>{batch.name}</strong>
+                <div style={{fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px'}}>{batch.start_date} to {batch.end_date}</div>
               </div>
-            ))}
-            {batches.length === 0 && <div className="empty-msg">No active batches found.</div>}
-          </div>
-        </section>
+              {user?.role === 'ADMIN' && (
+                <button 
+                  className="btn-run-allocator" 
+                  onClick={() => handleCreateDraft(batch.id)}
+                  disabled={drafting}
+                  style={{marginTop: '16px'}}
+                >
+                  {drafting ? 'Optimizing...' : 'Run Optimizer'}
+                </button>
+              )}
+            </div>
+          ))}
+          {batches.length === 0 && <div className="empty-state-premium">No active batches found.</div>}
+        </div>
+      </section>
 
-        <section className="section mt-40">
-          <h2>Recent Allocation Runs</h2>
-          <table className="data-table">
+      <section className="section">
+        <h3>Recent Allocation Runs</h3>
+        <div className="side-panel-card" style={{padding: 0, overflow: 'hidden'}}>
+          <table className="data-table" style={{width: '100%', borderCollapse: 'collapse', textAlign: 'left'}}>
             <thead>
-              <tr>
-                <th>ID</th>
-                <th>Run Date</th>
-                <th>Status</th>
-                <th>Fairness</th>
-                <th>Action</th>
+              <tr style={{backgroundColor: 'var(--bg-panel)', borderBottom: '1px solid var(--border-subtle)'}}>
+                <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>ID</th>
+                <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Run Date</th>
+                <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Status</th>
+                <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Fairness</th>
+                <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Action</th>
               </tr>
             </thead>
             <tbody>
               {runs.map(run => (
-                <tr key={run.id}>
-                  <td>#{run.id}</td>
-                  <td>{new Date(run.run_date).toLocaleString()}</td>
-                  <td>
-                    <span className={`status-badge status-${run.status.toLowerCase()}`}>
-                      {run.status}
-                    </span>
+                <tr key={run.id} style={{borderBottom: '1px solid var(--border-subtle)'}}>
+                  <td style={{padding: '12px 16px'}}>#{run.id}</td>
+                  <td style={{padding: '12px 16px'}}>{new Date(run.run_date).toLocaleString()}</td>
+                  <td style={{padding: '12px 16px'}}>
+                    <span className={`status-indicator dot-${run.status === 'COMMITTED' ? 'success' : run.status === 'APPROVED' ? 'info' : 'warning'}`}></span>
+                    <span style={{marginLeft: '8px', fontSize: '0.85rem', fontWeight: 600}}>{run.status}</span>
                   </td>
-                  <td>{run.fairness_score.toFixed(2)}</td>
-                  <td>
-                    <Link to={`/allocations/${run.id}`} className="btn btn-secondary btn-sm">View Details</Link>
+                  <td style={{padding: '12px 16px'}}>{run.fairness_score.toFixed(2)}</td>
+                  <td style={{padding: '12px 16px'}}>
+                    <Link to={`/allocations/${run.id}`} className="btn-run-allocator" style={{padding: '6px 12px', fontSize: '0.8rem', width: 'auto', display: 'inline-block', margin: 0, background: 'transparent', border: '1px solid var(--color-primary)', color: 'var(--color-primary)', boxShadow: 'none'}}>View Details</Link>
                   </td>
                 </tr>
               ))}
               {runs.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="empty-msg">No allocation runs exist yet.</td>
+                  <td colSpan="5" className="empty-state-premium" style={{border: 'none'}}>No allocation runs exist yet.</td>
                 </tr>
               )}
             </tbody>
           </table>
-        </section>
-      </main>
+        </div>
+      </section>
     </div>
   );
 }

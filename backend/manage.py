@@ -3,6 +3,8 @@ import os
 import sys
 
 def main():
+    # Ensure the parent directory is in sys.path so 'backend' can be imported
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.config.settings.local')
     try:
         from django.core.management import execute_from_command_line

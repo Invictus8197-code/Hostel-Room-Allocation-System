@@ -1,0 +1,106 @@
+.room-card-premium {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.room-card-premium:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Status variants */
+.room-maintenance { border-color: rgba(245, 158, 11, 0.4); opacity: 0.8; }
+.room-full { border-color: rgba(239, 68, 68, 0.3); }
+
+.room-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.room-number {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.room-type-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg-panel);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.status-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dot-success { background-color: var(--color-success); box-shadow: 0 0 5px var(--color-success); }
+.dot-warning { background-color: var(--color-warning); box-shadow: 0 0 5px var(--color-warning); }
+.dot-critical { background-color: var(--color-critical); box-shadow: 0 0 5px var(--color-critical); }
+
+.room-card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.bed-container {
+  display: flex;
+  gap: 4px;
+}
+
+.bed-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.bed-empty { background-color: var(--bg-panel); border: 1px solid var(--border-subtle); }
+.bed-occupied { background-color: var(--color-primary); }
+.bed-maintenance { background-color: var(--color-warning); }
+
+.room-occupancy-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.room-card-footer {
+  margin-top: auto;
+}
+
+.occupancy-bar-bg {
+  height: 4px;
+  background-color: var(--bg-panel);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.occupancy-bar-fill {
+  height: 100%;
+  background-color: var(--color-primary);
+  transition: width 0.3s ease;
+}
+
+.room-full .occupancy-bar-fill { background-color: var(--color-critical); }
+.room-maintenance .occupancy-bar-fill { background-color: var(--color-warning); }

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "fallback-secret-key-for-dev")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "fallback-secret-key-for-development-environment")
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() in ["true", "1", "yes"]
 
 ALLOWED_HOSTS = ["*"]
@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "backend.apps.allocations",
     "backend.apps.simulations",
     "backend.apps.analytics",
+    "backend.apps.operations",
     "backend.apps.api",
 ]
 

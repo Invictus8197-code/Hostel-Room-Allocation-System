@@ -59,38 +59,24 @@ function Simulation() {
   };
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <h2 className="brand">Smart Hostel</h2>
-        <nav className="nav-menu">
-          <Link to="/dashboard" className="nav-item">Dashboard</Link>
-          <Link to="/allocations" className="nav-item">Allocations</Link>
-          <Link to="/analytics" className="nav-item">Analytics</Link>
-          <Link to="/simulation" className="nav-item active">Simulation</Link>
-        </nav>
-        <div className="user-profile">
-          <div>{user?.username} ({user?.role})</div>
-          <button onClick={logout} className="logout-btn">Logout</button>
-        </div>
-      </aside>
-      
-      <main className="main-content">
-        <header className="page-header">
-          <h1>What-If Simulation Engine</h1>
-          <p className="text-gray" style={{marginTop: '5px'}}>
-            Evaluate hypothetical scenarios without modifying production allocations.
-          </p>
-        </header>
+    <div className="premium-dashboard-container">
+      <header className="page-header" style={{marginBottom: '24px'}}>
+        <h2>What-If Simulation Engine</h2>
+        <p className="text-secondary" style={{marginTop: '5px'}}>
+          Evaluate hypothetical scenarios without modifying production allocations.
+        </p>
+      </header>
 
-        <div style={{display: 'flex', gap: '30px', alignItems: 'flex-start'}}>
-          <section className="section" style={{flex: '0 0 350px'}}>
-            <h2>Configure Scenario</h2>
+      <div style={{display: 'flex', gap: '30px', alignItems: 'flex-start', flexWrap: 'wrap'}}>
+        <section className="section" style={{flex: '1 1 350px'}}>
+          <div className="side-panel-card" style={{padding: '24px'}}>
+            <h3 style={{marginBottom: '20px'}}>Configure Scenario</h3>
             <form onSubmit={handleSimulate}>
-              <div className="form-group">
-                <label>Target Batch</label>
+              <div className="form-group" style={{marginBottom: '20px'}}>
+                <label style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px', display: 'block'}}>Target Batch</label>
                 <select 
                   className="form-control" 
-                  style={{width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db'}}
+                  style={{width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)'}}
                   value={selectedBatchId} 
                   onChange={e => setSelectedBatchId(e.target.value)}
                   required
@@ -102,57 +88,69 @@ function Simulation() {
                 </select>
               </div>
 
-              <div className="form-group">
-                <label>Unavailable Bed IDs (comma separated)</label>
+              <div className="form-group" style={{marginBottom: '20px'}}>
+                <label style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px', display: 'block'}}>Unavailable Bed IDs (comma separated)</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 1, 4, 15"
                   value={unavailableBedIds} 
                   onChange={e => setUnavailableBedIds(e.target.value)} 
+                  style={{width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)'}}
                 />
-                <small className="text-gray" style={{display: 'block', marginTop: '5px'}}>Simulate beds under maintenance.</small>
+                <small className="text-secondary" style={{display: 'block', marginTop: '6px', fontSize: '0.75rem'}}>Simulate beds under maintenance.</small>
               </div>
 
-              <div className="form-group">
-                <label>Subset Student IDs (comma separated)</label>
+              <div className="form-group" style={{marginBottom: '24px'}}>
+                <label style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px', display: 'block'}}>Subset Student IDs (comma separated)</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 101, 102"
                   value={subsetStudentIds} 
                   onChange={e => setSubsetStudentIds(e.target.value)} 
+                  style={{width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)'}}
                 />
-                <small className="text-gray" style={{display: 'block', marginTop: '5px'}}>Simulate allocation for a specific subset.</small>
+                <small className="text-secondary" style={{display: 'block', marginTop: '6px', fontSize: '0.75rem'}}>Simulate allocation for a specific subset.</small>
               </div>
 
-              <button type="submit" className="btn btn-primary" style={{width: '100%', marginTop: '10px'}} disabled={loading}>
+              <button type="submit" className="btn-run-allocator" style={{width: '100%', marginTop: '10px'}} disabled={loading}>
                 {loading ? 'Running Simulation...' : 'Run Simulation'}
               </button>
             </form>
-            {error && <div className="conflict-alert" style={{marginTop: '20px'}}>{error}</div>}
-          </section>
+            {error && (
+              <div className="conflict-alert" style={{backgroundColor: 'var(--color-critical-bg)', borderLeft: '4px solid var(--color-critical)', color: 'var(--color-critical)', padding: '12px', marginTop: '20px', borderRadius: '4px'}}>
+                {error}
+              </div>
+            )}
+          </div>
+        </section>
 
-          {result && (
-            <section className="section" style={{flex: '1'}}>
-              <h2 style={{color: '#ea580c'}}>Simulation Results <span className="status-badge status-draft">HYPOTHETICAL</span></h2>
-              <div style={{background: '#fef3c7', color: '#92400e', padding: '12px', borderRadius: '6px', marginBottom: '20px', fontSize: '0.9rem'}}>
+        {result && (
+          <section className="section" style={{flex: '2 1 600px'}}>
+            <div className="side-panel-card" style={{padding: '24px'}}>
+              <h3 style={{color: 'var(--color-warning)', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px'}}>
+                Simulation Results 
+                <span style={{fontSize: '0.7rem', padding: '4px 8px', borderRadius: '4px', backgroundColor: 'var(--color-warning-bg)', color: 'var(--color-warning)', letterSpacing: '0.05em'}}>HYPOTHETICAL</span>
+              </h3>
+              
+              <div style={{background: 'var(--color-warning-bg)', color: 'var(--color-warning)', padding: '12px 16px', borderRadius: '8px', marginBottom: '24px', fontSize: '0.85rem', border: '1px solid rgba(245, 158, 11, 0.2)'}}>
                 <strong>Note:</strong> These results are strictly hypothetical and have not modified any real allocation data.
               </div>
 
-              <table className="data-table" style={{marginBottom: '30px'}}>
+              <table className="data-table" style={{width: '100%', borderCollapse: 'collapse', textAlign: 'left', marginBottom: '32px'}}>
                 <thead>
-                  <tr>
-                    <th>Metric</th>
-                    <th>Current Baseline</th>
-                    <th>Simulated</th>
-                    <th>Difference</th>
+                  <tr style={{borderBottom: '1px solid var(--border-subtle)'}}>
+                    <th style={{padding: '12px 8px', color: 'var(--text-secondary)'}}>Metric</th>
+                    <th style={{padding: '12px 8px', color: 'var(--text-secondary)'}}>Current Baseline</th>
+                    <th style={{padding: '12px 8px', color: 'var(--text-secondary)'}}>Simulated</th>
+                    <th style={{padding: '12px 8px', color: 'var(--text-secondary)'}}>Difference</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td><strong>Fairness Score</strong></td>
-                    <td>{result.current?.fairness_score?.toFixed(2) || 'N/A'}</td>
-                    <td>{result.simulated?.fairness_score?.toFixed(2) || 'N/A'}</td>
-                    <td>
+                  <tr style={{borderBottom: '1px solid var(--border-subtle)'}}>
+                    <td style={{padding: '12px 8px'}}><strong>Fairness Score</strong></td>
+                    <td style={{padding: '12px 8px'}}>{result.current?.fairness_score?.toFixed(2) || 'N/A'}</td>
+                    <td style={{padding: '12px 8px'}}>{result.simulated?.fairness_score?.toFixed(2) || 'N/A'}</td>
+                    <td style={{padding: '12px 8px'}}>
                       {result.difference?.fairness_score > 0 ? (
                         <span className="text-green">+{result.difference.fairness_score.toFixed(2)}</span>
                       ) : (
@@ -160,11 +158,11 @@ function Simulation() {
                       )}
                     </td>
                   </tr>
-                  <tr>
-                    <td><strong>Allocated Students</strong></td>
-                    <td>{result.current?.allocated || 0}</td>
-                    <td>{result.simulated?.allocated || 0}</td>
-                    <td>
+                  <tr style={{borderBottom: '1px solid var(--border-subtle)'}}>
+                    <td style={{padding: '12px 8px'}}><strong>Allocated Students</strong></td>
+                    <td style={{padding: '12px 8px'}}>{result.current?.allocated || 0}</td>
+                    <td style={{padding: '12px 8px'}}>{result.simulated?.allocated || 0}</td>
+                    <td style={{padding: '12px 8px'}}>
                       {result.difference?.allocated > 0 ? (
                         <span className="text-green">+{result.difference.allocated}</span>
                       ) : (
@@ -172,11 +170,11 @@ function Simulation() {
                       )}
                     </td>
                   </tr>
-                  <tr>
-                    <td><strong>Unallocated Students</strong></td>
-                    <td>{result.current?.unallocated || 0}</td>
-                    <td>{result.simulated?.unallocated || 0}</td>
-                    <td>
+                  <tr style={{borderBottom: '1px solid var(--border-subtle)'}}>
+                    <td style={{padding: '12px 8px'}}><strong>Unallocated Students</strong></td>
+                    <td style={{padding: '12px 8px'}}>{result.current?.unallocated || 0}</td>
+                    <td style={{padding: '12px 8px'}}>{result.simulated?.unallocated || 0}</td>
+                    <td style={{padding: '12px 8px'}}>
                       {result.difference?.unallocated > 0 ? (
                         <span className="text-red">+{result.difference.unallocated}</span>
                       ) : (
@@ -187,16 +185,16 @@ function Simulation() {
                 </tbody>
               </table>
 
-              <h3>Simulated Allocations Output</h3>
-              <div style={{maxHeight: '300px', overflowY: 'auto', background: '#f8fafc', padding: '15px', borderRadius: '6px', border: '1px solid #e2e8f0'}}>
-                <pre style={{margin: 0, fontSize: '0.85rem', color: '#334155'}}>
+              <h3 style={{marginBottom: '16px'}}>Simulated Allocations Output</h3>
+              <div style={{maxHeight: '300px', overflowY: 'auto', background: 'var(--bg-base)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-subtle)'}}>
+                <pre style={{margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
                   {JSON.stringify(result.allocation?.student_bed_assignments, null, 2)}
                 </pre>
               </div>
-            </section>
-          )}
-        </div>
-      </main>
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

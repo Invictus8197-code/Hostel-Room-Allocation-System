@@ -1,0 +1,67 @@
+.metric-card-premium {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.metric-card-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-subtle);
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.metric-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metric-icon-box svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.bg-primary { background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)); }
+.bg-success { background: linear-gradient(135deg, var(--color-success), #059669); }
+.bg-warning { background: linear-gradient(135deg, var(--color-warning), #D97706); }
+.bg-critical { background: linear-gradient(135deg, var(--color-critical), #DC2626); }
+
+.metric-title {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-body {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+}
+
+.metric-value {
+  color: var(--text-primary);
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.metric-subtitle {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}

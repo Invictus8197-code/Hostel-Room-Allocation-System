@@ -70,109 +70,113 @@ function Analytics() {
   const chartOptions = {
     responsive: true,
     scales: {
-      x: { stacked: true },
-      y: { stacked: true },
+      x: { 
+        stacked: true,
+        ticks: { color: '#94A3B8' },
+        grid: { color: '#334155' }
+      },
+      y: { 
+        stacked: true,
+        ticks: { color: '#94A3B8' },
+        grid: { color: '#334155' }
+      },
     },
     plugins: {
-      legend: { position: 'top' },
-      title: { display: true, text: 'Hostel Occupancy & Vacancy' },
+      legend: { 
+        position: 'top',
+        labels: { color: '#F8FAFC' }
+      },
+      title: { 
+        display: true, 
+        text: 'Hostel Occupancy & Vacancy',
+        color: '#F8FAFC'
+      },
     },
   };
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <h2 className="brand">Smart Hostel</h2>
-        <nav className="nav-menu">
-          <Link to="/dashboard" className="nav-item">Dashboard</Link>
-          <Link to="/allocations" className="nav-item">Allocations</Link>
-          <Link to="/analytics" className="nav-item active">Analytics</Link>
-          <Link to="/simulation" className="nav-item">Simulation</Link>
-        </nav>
-        <div className="user-profile">
-          <div>{user?.username} ({user?.role})</div>
-          <button onClick={logout} className="logout-btn">Logout</button>
-        </div>
-      </aside>
-      
-      <main className="main-content">
-        <header className="page-header">
-          <h1>Analytics</h1>
-        </header>
+    <div className="premium-dashboard-container">
+      <header className="page-header" style={{marginBottom: '24px'}}>
+        <h2>Analytics</h2>
+        <p className="text-secondary">Hostel Occupancy & Vacancy Breakdown</p>
+      </header>
 
-        <section className="section" style={{marginBottom: '30px'}}>
-          <h2>Analysis Period</h2>
-          <form onSubmit={handleApply} style={{display: 'flex', gap: '15px', alignItems: 'flex-end'}}>
-            <div className="form-group" style={{marginBottom: 0}}>
-              <label>Start Date</label>
-              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required />
+      <section className="section" style={{marginBottom: '32px'}}>
+        <div className="side-panel-card" style={{padding: '20px'}}>
+          <h3 style={{marginBottom: '16px', color: 'var(--text-secondary)'}}>Analysis Period</h3>
+          <form onSubmit={handleApply} style={{display: 'flex', gap: '15px', alignItems: 'flex-end', flexWrap: 'wrap'}}>
+            <div className="form-group" style={{marginBottom: 0, flex: 1, minWidth: '200px'}}>
+              <label style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px', display: 'block'}}>Start Date</label>
+              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required style={{width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)'}} />
             </div>
-            <div className="form-group" style={{marginBottom: 0}}>
-              <label>End Date</label>
-              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required />
+            <div className="form-group" style={{marginBottom: 0, flex: 1, minWidth: '200px'}}>
+              <label style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px', display: 'block'}}>End Date</label>
+              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required style={{width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)'}} />
             </div>
-            <button type="submit" className="btn btn-primary" style={{height: '42px'}}>Apply Filter</button>
+            <button type="submit" className="btn-run-allocator" style={{height: '42px', marginTop: 0, width: 'auto', padding: '0 24px'}}>Apply Filter</button>
           </form>
-        </section>
+        </div>
+      </section>
 
-        {loading ? (
-          <div className="loader">Loading Analytics...</div>
-        ) : (
-          <>
-            <section className="section" style={{marginBottom: '30px'}}>
-              <h2>Utilization Chart</h2>
-              <div style={{height: '400px'}}>
-                {data.length > 0 ? (
-                  <Bar options={chartOptions} data={chartData} />
-                ) : (
-                  <div className="empty-msg">No data available for this period.</div>
-                )}
-              </div>
-            </section>
-            
-            <section className="section">
-              <h2>Detailed Breakdown</h2>
-              <table className="data-table">
+      {loading ? (
+        <div className="loader premium-loader">Loading Analytics...</div>
+      ) : (
+        <>
+          <section className="section" style={{marginBottom: '32px'}}>
+            <h3>Utilization Chart</h3>
+            <div className="side-panel-card" style={{padding: '24px', height: '450px'}}>
+              {data.length > 0 ? (
+                <Bar options={chartOptions} data={chartData} />
+              ) : (
+                <div className="empty-state-premium">No data available for this period.</div>
+              )}
+            </div>
+          </section>
+          
+          <section className="section">
+            <h3>Detailed Breakdown</h3>
+            <div className="side-panel-card" style={{padding: 0, overflow: 'hidden'}}>
+              <table className="data-table" style={{width: '100%', borderCollapse: 'collapse', textAlign: 'left'}}>
                 <thead>
-                  <tr>
-                    <th>Hostel</th>
-                    <th>Total Rooms</th>
-                    <th>Total Beds</th>
-                    <th>Occupied</th>
-                    <th>Vacant</th>
-                    <th>Utilization</th>
-                    <th>Status</th>
+                  <tr style={{backgroundColor: 'var(--bg-panel)', borderBottom: '1px solid var(--border-subtle)'}}>
+                    <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Hostel</th>
+                    <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Total Rooms</th>
+                    <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Total Beds</th>
+                    <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Occupied</th>
+                    <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Vacant</th>
+                    <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Utilization</th>
+                    <th style={{padding: '12px 16px', color: 'var(--text-secondary)'}}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.map(h => (
-                    <tr key={h.hostel_id}>
-                      <td><strong>{h.hostel_name}</strong></td>
-                      <td>{h.total_rooms}</td>
-                      <td>{h.total_beds}</td>
-                      <td className="text-green">{h.occupied_beds}</td>
-                      <td className="text-blue">{h.vacant_beds}</td>
-                      <td>{(h.utilization_rate * 100).toFixed(1)}%</td>
-                      <td>
+                    <tr key={h.hostel_id} style={{borderBottom: '1px solid var(--border-subtle)'}}>
+                      <td style={{padding: '12px 16px'}}><strong>{h.hostel_name}</strong></td>
+                      <td style={{padding: '12px 16px'}}>{h.total_rooms}</td>
+                      <td style={{padding: '12px 16px'}}>{h.total_beds}</td>
+                      <td style={{padding: '12px 16px'}} className="text-green">{h.occupied_beds}</td>
+                      <td style={{padding: '12px 16px'}} className="text-blue">{h.vacant_beds}</td>
+                      <td style={{padding: '12px 16px'}}>{(h.utilization_rate * 100).toFixed(1)}%</td>
+                      <td style={{padding: '12px 16px'}}>
                         {h.underutilized ? (
-                          <span className="status-badge status-draft text-orange">Underutilized</span>
+                          <span style={{fontSize: '0.8rem', padding: '4px 8px', borderRadius: '4px', backgroundColor: 'var(--color-warning-bg)', color: 'var(--color-warning)'}}>Underutilized</span>
                         ) : (
-                          <span className="status-badge status-committed">Optimal</span>
+                          <span style={{fontSize: '0.8rem', padding: '4px 8px', borderRadius: '4px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)'}}>Optimal</span>
                         )}
                       </td>
                     </tr>
                   ))}
                   {data.length === 0 && (
                     <tr>
-                      <td colSpan="7" className="empty-msg">No breakdown available.</td>
+                      <td colSpan="7" className="empty-state-premium" style={{border: 'none'}}>No breakdown available.</td>
                     </tr>
                   )}
                 </tbody>
               </table>
-            </section>
-          </>
-        )}
-      </main>
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }

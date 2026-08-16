@@ -58,13 +58,18 @@ class HostelOptimizer:
             end_date__gt=self.batch.start_date
         ).values_list('bed_id', flat=True)
         
-        qs = Bed.objects.exclude(
+        # Exclude beds under maintenance
+        qs = Bed.objects.filter(is_under_maintenance=False).exclude(
             id__in=overlapping_beds
         ).select_related('room', 'room__floor__block__hostel')
         
         unavailable_bed_ids = self.scenario.get('unavailable_bed_ids')
         if unavailable_bed_ids:
             qs = qs.exclude(id__in=unavailable_bed_ids)
+            
+        hostel_ids = self.scenario.get('hostel_ids')
+        if hostel_ids is not None:
+            qs = qs.filter(room__floor__block__hostel_id__in=hostel_ids)
             
         self.available_beds = list(qs)
 
@@ -99,10 +104,9 @@ class HostelOptimizer:
         objective_terms = []
         preference_overrides = self.scenario.get('preference_overrides', {})
         
+        # 1. Base preferences and allocation maximization
         for app in self.eligible_students:
-            # Immutable dictionary preference fallback
             override = preference_overrides.get(app.student.id, {})
-            
             try:
                 pref = app.preference
                 pref_room_type = override.get('preferred_room_type', pref.preferred_room_type)
@@ -122,9 +126,54 @@ class HostelOptimizer:
                             score += 5
                             
                     self.preferences[(app.id, bed.id)] = score
-                    
                     # Weight allocation count by 1000 to prioritize it over preferences
                     objective_terms.append(self.X[app.id, bed.id] * (1000 + score))
+
+        # 2. Mutual Roommate Pairing (Bonus for being assigned to the same room)
+        # Find mutual requests
+        mutual_pairs = []
+        for i, app_a in enumerate(self.eligible_students):
+            try:
+                requested_a = list(app_a.preference.roommate_requests.values_list('user__student_profile__id', flat=True))
+                for j in range(i + 1, len(self.eligible_students)):
+                    app_b = self.eligible_students[j]
+                    if app_b.student.id in requested_a:
+                        try:
+                            requested_b = list(app_b.preference.roommate_requests.values_list('user__student_profile__id', flat=True))
+                            if app_a.student.id in requested_b:
+                                mutual_pairs.append((app_a, app_b))
+                        except Preference.DoesNotExist:
+                            pass
+            except Preference.DoesNotExist:
+                pass
+
+        # For each mutual pair, add a bonus if they are in the same room
+        # We need a boolean variable for each room indicating both are in that room
+        room_beds = {}
+        for bed in self.available_beds:
+            room_beds.setdefault(bed.room.id, []).append(bed)
+
+        for app_a, app_b in mutual_pairs:
+            for room_id, beds_in_room in room_beds.items():
+                if len(beds_in_room) < 2:
+                    continue # Cannot place two people in a room with < 2 available beds
+                
+                # Create a boolean variable that is True if both A and B are in this room
+                both_in_room = self.model.NewBoolVar(f'pair_{app_a.id}_{app_b.id}_in_room_{room_id}')
+                
+                # sum of X for app_a in this room
+                a_in_room = sum(self.X[app_a.id, b.id] for b in beds_in_room if (app_a.id, b.id) in self.X)
+                # sum of X for app_b in this room
+                b_in_room = sum(self.X[app_b.id, b.id] for b in beds_in_room if (app_b.id, b.id) in self.X)
+                
+                # both_in_room can only be 1 if a_in_room == 1 AND b_in_room == 1
+                # since a_in_room <= 1 and b_in_room <= 1 (from hard constraints), 
+                # both_in_room = 1 implies a_in_room + b_in_room == 2
+                self.model.Add(a_in_room + b_in_room == 2).OnlyEnforceIf(both_in_room)
+                self.model.Add(a_in_room + b_in_room < 2).OnlyEnforceIf(both_in_room.Not())
+                
+                # Add a massive bonus for fulfilling a mutual roommate request
+                objective_terms.append(both_in_room * 50)
                     
         self.model.Maximize(sum(objective_terms))
 
